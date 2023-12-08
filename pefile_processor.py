@@ -1,8 +1,8 @@
-import array
 import math
 import re
+import subprocess
 import typing
-
+import string_analyzer
 import pefile
 import datetime
 import hashlib
@@ -16,18 +16,42 @@ def analyze_file(path: str):
     return {
         "hashes": get_hashes(buf),
         "size": get_size(path),
-        # TODO
+        # TODO: Shannon entropy is correct here, but what do we need to extract to match the PEStudio's output?
         "entropy": shannon_entropy(buf),
         # TODO
         "dos_header": get_dos_header(pe),
         "file_header": get_file_header(pe),
         "optional_header": get_optional_header(pe),
         "imports": get_imports(pe),
-        # TODO: Verify this
+        # TODO: Verify this, should be tested with a DLL file
         "exports": get_exports(pe),
-        # TODO
         "resources": get_resources(pe),
+        "sections": get_sections(pe),
+        "strings": analyze_strings(path),
     }
+
+
+def analyze_strings(path):
+    # TODO: Allows users to customize min characters
+    strings_capture_proc = subprocess.Popen(["flarestrings", "-n", "5", path], stdout=subprocess.PIPE)
+    strings_rank_proc = subprocess.Popen(["rank_strings", "-s"],
+                                         stdin=strings_capture_proc.stdout,
+                                         stdout=subprocess.PIPE, text=True)
+    output, error = strings_rank_proc.communicate()
+
+    line_data = []
+    strings = output.split("\n")
+    regex = re.compile(f"^(-?[0-9]*(.[0-9]+)?),(.*)$")
+    for line in strings:
+        line_contents = regex.findall(line)
+        if line_contents:
+            line_tuple = line_contents[0]
+            line_data.append({
+                "score": float(line_tuple[0]),
+                "data": line_tuple[2],
+                "tags": string_analyzer.analyze_string(line_tuple[2]),
+            })
+    return line_data
 
 
 def get_resources(pe: pefile.PE):
@@ -63,13 +87,35 @@ def get_resources(pe: pefile.PE):
     return results
 
 
+def get_sections(pe: pefile.PE):
+    res = []
+    for section in pe.sections:
+        res.append(get_section(section))
+    return res
+
+
+def get_section(section):
+    pe: pefile.PE = section.pe
+    out = {
+        "virtual_size": section.Misc_VirtualSize,
+        "virtual_address": section.VirtualAddress,
+        "raw_size": section.SizeOfRawData,
+        "raw_address": section.PointerToRawData,
+        "name": section.Name.decode("UTF-8").strip("\x00"),
+        "hashes": get_hashes(section.get_data()),
+        "entropy": section.get_entropy(),
+        "characteristics": parse_section_characteristics(section.Characteristics)
+    }
+    return out
+
+
 def get_size(path: str):
     return os.stat(path).st_size
 
 
 def get_dos_header(pe: pefile.PE):
+    # print(pe.DOS_HEADER)
     pass
-
 
 def get_file_header(pe: pefile.PE):
     file_header_dict = pe.FILE_HEADER.dump_dict()
@@ -149,6 +195,36 @@ def parse_file_header_characteristics(characteristic_flag: int):
     }
 
 
+def parse_section_characteristics(characteristic_flag: int):
+    bit_array = []
+    for i in range(32):
+        flag_enabled = bool((characteristic_flag >> i) & 1)
+        bit_array.append(flag_enabled)
+    return {
+        "object_file_pad_to_next_boundary": bit_array[3],
+        "has_executable_code": bit_array[5],
+        "has_initialized_data": bit_array[6],
+        "has_uninitialized_data": bit_array[7],
+        "object_file_section_contains_info": bit_array[9],
+        "object_file_section_to_remove_from_image": bit_array[11],
+        "object_file_section_includes_comdat": bit_array[12],
+        "has_global_pointer_data": bit_array[15],
+        "memory_purgeable": bit_array[16],
+        "memory_16bit": bit_array[17],
+        "memory_locked": bit_array[18],
+        "memory_preload": bit_array[19],
+        "object_file_alignment_bytes": int("".join(map(lambda x: str(int(x)), bit_array[20:24])), 2),
+        "contains_extended_relocations": bit_array[24],
+        "discardable": bit_array[25],
+        "cacheable": not bit_array[26],
+        "pageable": not bit_array[27],
+        "shareable": bit_array[28],
+        "executable": bit_array[29],
+        "readable": bit_array[30],
+        "writeable": bit_array[31],
+    }
+
+
 def parse_optional_header_dll_characteristics(characteristic_flag: int):
     bit_array = []
     for i in range(16):
@@ -190,8 +266,7 @@ def get_imports(pe: pefile.PE):
 
 def get_exports(pe: pefile.PE):
     results = []
-    # Should be replaced with hasattr instead of using a catch-all
-    try:
+    if hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
         for exp in pe.DIRECTORY_ENTRY_EXPORT.symbols:
             try:
                 obj = {
@@ -201,9 +276,7 @@ def get_exports(pe: pefile.PE):
                 results.append(obj)
             except:
                 continue
-        return results
-    except Exception as e:
-        return []
+    return results
 
 
 def get_hashes(buf: typing.Union[bytes, str]):
