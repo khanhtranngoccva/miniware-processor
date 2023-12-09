@@ -6,7 +6,7 @@ from definition_helper import definition
 def windows_absolute_file_path(raw_string: str):
     res = []
     regex = re.compile(
-        r'(^|)'
+        r'(^|[\s\W])'
         r'(([a-zA-Z]\:|\\\\[^\/\\:*?"\'<>|,]+[\\/]+[^\/\\:*?"\'<>|,]+)'
         r'([\\/]+[^\/\\:*?"<>|,\']+)+'
         r'(\.[^\/\\:*?"<>|,\']+)?)'
@@ -34,4 +34,4 @@ def filename(raw_string: str):
 
 
 if __name__ == '__main__':
-    print(filename("coccoc.exe,'data.c'"))
+    print(filename("coccoc.exe','data.c'"))
