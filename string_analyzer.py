@@ -32,7 +32,7 @@ loaded_definitions = load_definitions()
 
 def analyze_string(data: str):
     result: set[str] = {*""}
-    matches: set[str] = {*""}
+    matches = []
     for definition in loaded_definitions:
         # Definitions can return True, False, or an array of strings.
         definition_return = definition(data)
@@ -41,7 +41,10 @@ def analyze_string(data: str):
             # If return value is an array, iterate through it
             if isinstance(definition_return, list):
                 for match in definition_return:
-                    matches.add(match)
+                    matches.append({
+                        "match": match,
+                        "definition": definition.name
+                    })
     return {
         "tags": [*result],
         "matches": [*matches]

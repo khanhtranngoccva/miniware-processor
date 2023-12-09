@@ -16,6 +16,18 @@ def http_url(raw_string):
     return result
 
 
+@definition("Detects domain names", "Internet")
+def domain_name(raw_string):
+    result = []
+    regex = re.compile(
+        r"(^|[\s\W])((?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9]{1,6})(?=[\s\W]|$)",
+        re.IGNORECASE)
+    matches = regex.findall(raw_string)
+    for entry in matches:
+        result.append(entry[1])
+    return result
+
+
 @definition("IP Address", "Internet")
 def ip_address(raw_string: str):
     import helpers.misc
@@ -29,5 +41,3 @@ def ip_address(raw_string: str):
             result_ips.append(match)
 
     return result_ips
-
-

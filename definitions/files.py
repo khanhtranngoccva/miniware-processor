@@ -6,11 +6,9 @@ from definition_helper import definition
 def windows_absolute_file_path(raw_string: str):
     res = []
     regex = re.compile(
-        r'(^|[\s\W])'
-        r'(([a-zA-Z]\:|\\\\[^\/\\:*?"\'<>|,]+[\\/]+[^\/\\:*?"\'<>|,]+)'
-        r'([\\/]+[^\/\\:*?"<>|,\']+)+'
-        r'(\.[^\/\\:*?"<>|,\']+)?)'
-        r'(?=[\s\W]|$)',
+        r'(^|)'
+        r'^([a-zA-Z]:|\\\\[^\/\\:*?"<>|]+[\\/]+[^\/\\:*?"<>|]+)([\\/]+[^\/\\:*?"<>|]+)+(\.[^\/\\:*?"<>|]+)$'
+        r'(?=[\s"\',:;<>]|$)',
         re.IGNORECASE)
     for entry in regex.findall(raw_string):
         res.append(entry[1])
@@ -24,7 +22,7 @@ def filename(raw_string: str):
         r'(^|[\s\W])'
         r'('
         r'[^\/\\:*?"<>|,\']+'
-        r'(\.[^\/\\:*?"<>|,\']+)?'
+        r'(\.[^\/\\:*?"<>|,\']+)'
         r')'
         r'(?=[\s\W]|$)',
         re.IGNORECASE)
