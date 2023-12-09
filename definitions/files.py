@@ -21,7 +21,7 @@ def windows_absolute_file_path(raw_string: str):
 def filename(raw_string: str):
     res = []
     regex = re.compile(
-        r'(^|)'
+        r'(^|[\s\W])'
         r'('
         r'[^\/\\:*?"<>|,\']+'
         r'(\.[^\/\\:*?"<>|,\']+)?'
