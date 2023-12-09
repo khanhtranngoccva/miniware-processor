@@ -117,6 +117,7 @@ def get_dos_header(pe: pefile.PE):
     # print(pe.DOS_HEADER)
     pass
 
+
 def get_file_header(pe: pefile.PE):
     file_header_dict = pe.FILE_HEADER.dump_dict()
 
