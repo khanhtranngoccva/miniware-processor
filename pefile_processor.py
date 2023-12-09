@@ -49,7 +49,7 @@ def analyze_strings(path):
             line_data.append({
                 "score": float(line_tuple[0]),
                 "data": line_tuple[2],
-                "tags": string_analyzer.analyze_string(line_tuple[2]),
+                "analysis": string_analyzer.analyze_string(line_tuple[2]),
             })
     return line_data
 
