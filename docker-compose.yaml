@@ -4,6 +4,7 @@ services:
     image: "postgres"
     restart: "always"
     environment:
+      POSTGRES_USER: "miniware"
       POSTGRES_PASSWORD: "developer"
     ports:
       - "8888:5432"

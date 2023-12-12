@@ -249,17 +249,16 @@ def get_imports(pe: pefile.PE):
     results = []
 
     imp: pefile.ImportDescData
-    for imp in pe.DIRECTORY_ENTRY_IMPORT:
-        import_list: list[pefile.ImportData] = imp.imports
-        try:
-            for import_obj in import_list:
-                obj = {
-                    "name": import_obj.name.decode("ascii"),
-                    "address": import_obj.address + pe.OPTIONAL_HEADER.ImageBase,
-                }
-                results.append(obj)
-        except:
-            continue
+    if hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        for imp in pe.DIRECTORY_ENTRY_IMPORT:
+            if hasattr(imp, "imports"):
+                import_list: list[pefile.ImportData] = imp.imports
+                for import_obj in import_list:
+                    obj = {
+                        "name": import_obj.name.decode("ascii"),
+                        "address": import_obj.address + pe.OPTIONAL_HEADER.ImageBase,
+                    }
+                    results.append(obj)
 
     return results
 
@@ -272,6 +271,7 @@ def get_exports(pe: pefile.PE):
                 obj = {
                     "name": exp.name.decode("ascii"),
                     "address": exp.address + pe.OPTIONAL_HEADER.ImageBase,
+                    "ordinal": exp.ordinal,
                 }
                 results.append(obj)
             except:
