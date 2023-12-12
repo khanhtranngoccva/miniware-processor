@@ -1,5 +1,5 @@
 import definitions
-import definition_helper
+from helpers import definition_helper
 import types
 import pkgutil
 import os

@@ -1,0 +1,15 @@
+version: "2"
+services:
+  postgresql:
+    image: "postgres"
+    restart: "always"
+    environment:
+      POSTGRES_PASSWORD: "developer"
+    ports:
+      - "8888:5432"
+    networks:
+      - "main"
+networks:
+  main:
+    driver: "bridge"
+

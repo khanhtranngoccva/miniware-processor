@@ -1,6 +1,6 @@
 import re
 
-from definition_helper import definition
+from helpers.definition_helper import definition
 
 
 @definition("Detects email addresses", "Credentials")

@@ -83,7 +83,6 @@ def get_resources(pe: pefile.PE):
                     'size': res2.data.struct.Size,
                     'hashes': get_hashes(pe.get_data(res2.data.struct.OffsetToData, res2.data.struct.Size))
                 })
-
     return results
 
 

@@ -2,7 +2,7 @@ import re
 
 import nltk
 from nltk.corpus import words
-from definition_helper import definition
+from helpers.definition_helper import definition
 
 try:
     english_words = set(words.words())

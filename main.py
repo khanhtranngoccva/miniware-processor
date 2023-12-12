@@ -1,5 +1,9 @@
-import pprint
-import pefile_processor
+from server.flask_server import app
+import server.error_handling
+import server.controllers.executable
 
-out = pefile_processor.analyze_file("./test_coccoc.exe")
-pprint.pp(out)
+server.error_handling.add_error_handling(app)
+server.controllers.executable.routes(app)
+
+if __name__ == '__main__':
+    app.run("0.0.0.0", 4000)

@@ -1,4 +1,4 @@
-from definition_helper import definition
+from helpers.definition_helper import definition
 
 REGISTRY_SIGNATURE_LIST = [
     "HKEY_LOCAL_MACHINE",
