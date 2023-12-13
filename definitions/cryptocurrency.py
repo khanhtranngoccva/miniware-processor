@@ -32,7 +32,7 @@ def cryptocurrency(raw_string: str):
     for currency in _CRYPTOCURRENCY_LIST:
         try:
             idx = lowercase_string.index(currency)
-            res.append(raw_string[idx:idx + len(currency)])
+            res.append([idx, idx + len(currency)])
         except ValueError:
             continue
     return res

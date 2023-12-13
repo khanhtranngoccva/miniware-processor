@@ -13,11 +13,17 @@ def analyze_file(path: str):
     pe = pefile.PE(path)
     with open(path, "rb") as file:
         buf = file.read()
-    return {
-        "hashes": get_hashes(buf),
-        "size": get_size(path),
+
+    for data in pe.VS_FIXEDFILEINFO:
+        print(data.dump_dict())
+    out = {
+        # Removed in the actual code.
+        # "hashes": get_hashes(buf),
+        # "size": get_size(path),
         # TODO: Shannon entropy is correct here, but what do we need to extract to match the PEStudio's output?
         "entropy": shannon_entropy(buf),
+        "imphash": pe.get_imphash(),
+        "file_info": get_fixed_file_info(pe),
         # TODO
         "dos_header": get_dos_header(pe),
         "file_header": get_file_header(pe),
@@ -28,6 +34,32 @@ def analyze_file(path: str):
         "resources": get_resources(pe),
         "sections": get_sections(pe),
         "strings": analyze_strings(path),
+    }
+
+    pe.close()
+    return out
+
+
+def get_fixed_file_info(pe):
+    entries = {}
+    for file_info_list in pe.FileInfo:
+        for file_info in file_info_list:
+            if file_info.Key == b'StringFileInfo':
+                for st in file_info.StringTable:
+                    for _key, _value in st.entries.items():
+                        key = _key.decode("UTF-8")
+                        value = _value.decode("UTF-8")
+                        entries[key] = value
+    return {
+        "company": entries.get("CompanyName"),
+        "description": entries.get("FileDescription"),
+        "version": entries.get("FileVersion"),
+        "internal_name": entries.get("InternalName"),
+        "copyright": entries.get("LegalCopyright"),
+        "original_filename": entries.get("OriginalFilename"),
+        "product_name": entries.get("ProductName"),
+        "product_version": entries.get("ProductVersion"),
+        "language_id": entries.get("LanguageId"),
     }
 
 
@@ -119,7 +151,7 @@ def get_dos_header(pe: pefile.PE):
 
 def get_file_header(pe: pefile.PE):
     file_header_dict = pe.FILE_HEADER.dump_dict()
-
+    print(file_header_dict)
     raw_timestamp = file_header_dict["TimeDateStamp"]["Value"]
     timestamp_hex = re.search(r"^0x[0-9a-f]+", raw_timestamp, flags=re.IGNORECASE)
     timestamp = datetime.datetime.fromtimestamp(int(timestamp_hex.group(), 16))
@@ -254,11 +286,14 @@ def get_imports(pe: pefile.PE):
             if hasattr(imp, "imports"):
                 import_list: list[pefile.ImportData] = imp.imports
                 for import_obj in import_list:
-                    obj = {
-                        "name": import_obj.name.decode("ascii"),
-                        "address": import_obj.address + pe.OPTIONAL_HEADER.ImageBase,
-                    }
-                    results.append(obj)
+                    try:
+                        obj = {
+                            "name": import_obj.name.decode("ascii"),
+                            "address": import_obj.address + pe.OPTIONAL_HEADER.ImageBase,
+                        }
+                        results.append(obj)
+                    except AttributeError:
+                        pass
 
     return results
 

@@ -24,7 +24,7 @@ def registry(raw_string: str):
     for key in REGISTRY_SIGNATURE_LIST:
         try:
             idx = lowercase_string.index(key)
-            res.append(raw_string[idx:idx + len(key)])
+            res.append([idx, idx + len(key)])
         except ValueError:
             continue
     return res

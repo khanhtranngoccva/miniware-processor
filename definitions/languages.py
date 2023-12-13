@@ -19,17 +19,19 @@ def english_corpus(raw_string: str):
         # Camel case
         r"(?<=[a-z])(?=[A-Z])"
         # Dealing with non-word characters
-        r"|[\W_]"
+        r"|[\W_]+"
     )
 
-    tokens = r1.split(raw_string)
+    replaced = r1.sub(" ", raw_string)
+    matches = re.compile(r"\S+").finditer(replaced)
 
-    for token in tokens:
+    for match in matches:
         # Avoid 1-letter words qualifying
+        token = match.group()
         if len(token) < 4:
             continue
         if token.lower() in english_words or token in english_words:
-            res.append(token)
+            res.append([match.start(), match.end()])
 
     return res
 

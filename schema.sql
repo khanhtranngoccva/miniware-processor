@@ -32,12 +32,18 @@ CREATE TABLE "analyses"
 CREATE TABLE "basic_information"
 (
     -- 1-1 relationship
-    "analysis_id" BIGINT PRIMARY KEY,
-    "entropy"     FLOAT,
-    "isPacked"    BOOLEAN,
-    "impHash"     VARCHAR,
-    "version"     VARCHAR,
-    "description" VARCHAR,
+    "analysis_id"       BIGINT PRIMARY KEY,
+    "entropy"           FLOAT,
+    "imphash"           VARCHAR,
+    "company"           VARCHAR,
+    "description"       VARCHAR,
+    "version"           VARCHAR,
+    "internal_name"     VARCHAR,
+    "copyright"         VARCHAR,
+    "original_filename" VARCHAR,
+    "product_name"      VARCHAR,
+    "product_version"   VARCHAR,
+    "language_id"       VARCHAR,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -170,10 +176,25 @@ CREATE TABLE "resources"
     "name"             VARCHAR,
     "primary_language" VARCHAR,
     "sub_language"     VARCHAR,
+    "type"             VARCHAR,
+    "offset"           BIGINT,
+    "size"             BIGINT,
 
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
+);
+
+CREATE TABLE "resource_hashes"
+(
+    "id"          SERIAL8 PRIMARY KEY,
+    "resource_id" BIGINT,
+    "algorithm"   VARCHAR,
+    "value"       VARCHAR,
+    CONSTRAINT "resource_id"
+        FOREIGN KEY ("resource_id") REFERENCES resources ("id")
+            ON DELETE CASCADE,
+    UNIQUE ("resource_id", "algorithm")
 );
 
 CREATE TABLE "sections"
@@ -259,7 +280,8 @@ CREATE TABLE "string_matches"
 (
     "id"         SERIAL8 PRIMARY KEY,
     "string_id"  BIGINT,
-    "match"      VARCHAR,
+    "start"      INT,
+    "end"        INT,
     "definition" VARCHAR,
     CONSTRAINT "string_id"
         FOREIGN KEY ("string_id") REFERENCES strings ("id")
