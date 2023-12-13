@@ -14,7 +14,8 @@ CREATE TABLE file_hashes
     "value"     VARCHAR,
     CONSTRAINT "file_id"
         FOREIGN KEY ("file_id") REFERENCES files ("id")
-            ON DELETE CASCADE
+            ON DELETE CASCADE,
+    UNIQUE ("file_id", "algorithm")
 );
 
 CREATE TABLE "analyses"
@@ -199,7 +200,8 @@ CREATE TABLE "section_hashes"
     "value"      VARCHAR,
     CONSTRAINT "section_id"
         FOREIGN KEY ("section_id") REFERENCES sections ("id")
-            ON DELETE CASCADE
+            ON DELETE CASCADE,
+    UNIQUE ("section_id", "algorithm")
 );
 
 CREATE TABLE "section_characteristics"

@@ -10,8 +10,14 @@ def get_temp_path(path: str):
     return output
 
 
-os.makedirs(get_temp_path("/executable"), exist_ok=True)
+def get_application_path(path: str):
+    app_directory = os.path.join(ROOT_DIRECTORY)
+    output = Path(app_directory).joinpath(path.lstrip("/\\")).resolve()
+    output.relative_to(Path(app_directory).resolve())
+    return output
 
+
+os.makedirs(get_temp_path("/executable"), exist_ok=True)
 
 if __name__ == '__main__':
     print(get_temp_path("/oof//o/"))

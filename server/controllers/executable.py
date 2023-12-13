@@ -5,6 +5,7 @@ import flask
 from flask import request
 import helpers.directory
 from server.response import response
+import server.entity.file
 
 
 def routes(app: flask.Flask):
@@ -16,6 +17,7 @@ def routes(app: flask.Flask):
         temp_path = helpers.directory.get_temp_path(f"executable/{temp_name}")
 
         executable.save(temp_path)
+        server.entity.file.create_file(temp_path)
 
         try:
             os.remove(temp_path)
