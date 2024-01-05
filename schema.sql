@@ -287,3 +287,4 @@ CREATE TABLE "string_matches"
         FOREIGN KEY ("string_id") REFERENCES strings ("id")
             ON DELETE CASCADE
 );
+

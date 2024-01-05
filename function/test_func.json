@@ -1,0 +1,266 @@
+[
+        [
+          {
+            "type": "absolute",
+            "value": 4207618
+          },
+          {
+            "success": true,
+            "node": {
+              "type": "statement",
+              "statement": {
+                "type": "and"
+              }
+            },
+            "children": [
+              {
+                "success": true,
+                "node": {
+                  "type": "statement",
+                  "statement": {
+                    "type": "subscope",
+                    "scope": "basic block"
+                  }
+                },
+                "children": [
+                  {
+                    "success": true,
+                    "node": {
+                      "type": "statement",
+                      "statement": {
+                        "type": "and"
+                      }
+                    },
+                    "children": [
+                      {
+                        "success": true,
+                        "node": {
+                          "type": "feature",
+                          "feature": {
+                            "type": "api",
+                            "api": "kernel32.MapViewOfFile"
+                          }
+                        },
+                        "children": [],
+                        "locations": [
+                          {
+                            "type": "absolute",
+                            "value": 4207694
+                          }
+                        ],
+                        "captures": {}
+                      },
+                      {
+                        "success": true,
+                        "node": {
+                          "type": "statement",
+                          "statement": {
+                            "type": "or"
+                          }
+                        },
+                        "children": [
+                          {
+                            "success": true,
+                            "node": {
+                              "type": "feature",
+                              "feature": {
+                                "type": "number",
+                                "number": 4,
+                                "description": "FILE_MAP_READ"
+                              }
+                            },
+                            "children": [],
+                            "locations": [
+                              {
+                                "type": "absolute",
+                                "value": 4207691
+                              }
+                            ],
+                            "captures": {}
+                          },
+                          {
+                            "success": false,
+                            "node": {
+                              "type": "feature",
+                              "feature": {
+                                "type": "number",
+                                "number": 6,
+                                "description": "FILE_MAP_WRITE | FILE_MAP_READ"
+                              }
+                            },
+                            "children": [],
+                            "locations": [],
+                            "captures": {}
+                          }
+                        ],
+                        "locations": [],
+                        "captures": {}
+                      }
+                    ],
+                    "locations": [],
+                    "captures": {}
+                  }
+                ],
+                "locations": [
+                  {
+                    "type": "absolute",
+                    "value": 4207688
+                  }
+                ],
+                "captures": {}
+              },
+              {
+                "success": true,
+                "node": {
+                  "type": "statement",
+                  "statement": {
+                    "type": "optional"
+                  }
+                },
+                "children": [
+                  {
+                    "success": false,
+                    "node": {
+                      "type": "feature",
+                      "feature": {
+                        "type": "api",
+                        "api": "kernel32.UnmapViewOfFile"
+                      }
+                    },
+                    "children": [],
+                    "locations": [],
+                    "captures": {}
+                  },
+                  {
+                    "success": false,
+                    "node": {
+                      "type": "statement",
+                      "statement": {
+                        "type": "and"
+                      }
+                    },
+                    "children": [
+                      {
+                        "success": false,
+                        "node": {
+                          "type": "feature",
+                          "feature": {
+                            "type": "match",
+                            "match": "get file size"
+                          }
+                        },
+                        "children": [],
+                        "locations": [],
+                        "captures": {}
+                      }
+                    ],
+                    "locations": [],
+                    "captures": {}
+                  },
+                  {
+                    "success": true,
+                    "node": {
+                      "type": "statement",
+                      "statement": {
+                        "type": "subscope",
+                        "scope": "basic block"
+                      }
+                    },
+                    "children": [
+                      {
+                        "success": true,
+                        "node": {
+                          "type": "statement",
+                          "statement": {
+                            "type": "and"
+                          }
+                        },
+                        "children": [
+                          {
+                            "success": true,
+                            "node": {
+                              "type": "feature",
+                              "feature": {
+                                "type": "api",
+                                "api": "kernel32.CreateFileMapping"
+                              }
+                            },
+                            "children": [],
+                            "locations": [
+                              {
+                                "type": "absolute",
+                                "value": 4207675
+                              }
+                            ],
+                            "captures": {}
+                          },
+                          {
+                            "success": true,
+                            "node": {
+                              "type": "statement",
+                              "statement": {
+                                "type": "or"
+                              }
+                            },
+                            "children": [
+                              {
+                                "success": true,
+                                "node": {
+                                  "type": "feature",
+                                  "feature": {
+                                    api
+                                    "type": "number",
+                                    "number": 2,
+                                    "description": "PAGE_READONLY"
+                                  }
+                                },
+                                "children": [],
+                                "locations": [
+                                  {
+                                    "type": "absolute",
+                                    "value": 4207671
+                                  }
+                                ],
+                                "captures": {}
+                              },
+                              {
+                                "success": false,
+                                "node": {
+                                  "type": "feature",
+                                  "feature": {
+                                    "type": "number",
+                                    "number": 4,
+                                    "description": "PAGE_READWRITE"
+                                  }
+                                },
+                                "children": [],
+                                "locations": [],
+                                "captures": {}
+                              }
+                            ],
+                            "locations": [],
+                            "captures": {}
+                          }
+                        ],
+                        "locations": [],
+                        "captures": {}
+                      }
+                    ],
+                    "locations": [
+                      {
+                        "type": "absolute",
+                        "value": 4207668
+                      }
+                    ],
+                    "captures": {}
+                  }
+                ],
+                "locations": [],
+                "captures": {}
+              }
+            ],
+            "locations": [],
+            "captures": {}
+          }
+        ]
+      ]
