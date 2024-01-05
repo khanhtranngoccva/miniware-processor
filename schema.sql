@@ -1,7 +1,7 @@
 CREATE TABLE files
 (
     "id"   SERIAL8 PRIMARY KEY,
-    "size" BIGINT NOT NULL,
+    "size" BIGINT NOT NULL
 );
 
 CREATE TYPE ANALYSIS_STATE AS ENUM ('processing', 'complete');
