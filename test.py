@@ -1,9 +1,19 @@
+import json
 import pprint
 
-import pefile
-import win32api
-import pefile_processor
 
-ExecutablePath = "./test_coccoc.exe"
-res = pefile_processor.analyze_file("./test_coccoc.exe")
-pprint.pp(res["strings"])
+def filter_true_nodes(nodelist):
+    result = []
+    for node in nodelist:
+        if node.get('success'):
+            result.append({
+                **node,
+                "children": filter_true_nodes(node.get('children') or [])
+            })
+    return result
+
+
+if __name__ == '__main__':
+    with open("./test2.json", "r") as file:
+        data = json.load(file)
+    pprint.pp(filter_true_nodes([data[1]]))

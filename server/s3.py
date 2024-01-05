@@ -44,7 +44,7 @@ async def download(asset_key, location, filename=None):
 
             extension = mimetypes.guess_extension(obj['ResponseMetadata']['HTTPHeaders']['content-type']) or ""
             if _filename is None:
-                _filename = os.path.basename(_filename)
+                _filename = os.path.basename(_asset_key)
             _filename += extension
 
             async with aiofiles.open(os.path.join(_location, _filename), "bw") as file:

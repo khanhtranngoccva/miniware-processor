@@ -24,16 +24,16 @@ def analyze_file(path: str):
         "entropy": shannon_entropy(buf),
         "imphash": pe.get_imphash(),
         "file_info": get_fixed_file_info(pe),
-        # TODO
-        "dos_header": get_dos_header(pe),
+        # TODO: Possibly retired (not important)
+        # "dos_header": get_dos_header(pe),
         "file_header": get_file_header(pe),
         "optional_header": get_optional_header(pe),
         "imports": get_imports(pe),
-        # TODO: Verify this, should be tested with a DLL file
         "exports": get_exports(pe),
         "resources": get_resources(pe),
         "sections": get_sections(pe),
         "strings": analyze_strings(path),
+        # Missing: CAPA, Graph
     }
 
     pe.close()
@@ -168,38 +168,42 @@ def get_file_header(pe: pefile.PE):
 
 
 def get_optional_header(pe: pefile.PE):
-    optional_header_dict = pe.OPTIONAL_HEADER.dump_dict()
+    def _get_attr(key, nullable=False):
+        if nullable:
+            return getattr(pe.OPTIONAL_HEADER, key, None)
+        else:
+            return getattr(pe.OPTIONAL_HEADER, key)
+
     return {
-        "magic": optional_header_dict["Magic"]["Value"],
-        "major_linker_version": optional_header_dict["MajorLinkerVersion"]["Value"],
-        "minor_linker_version": optional_header_dict["MinorLinkerVersion"]["Value"],
-        "size_of_code": optional_header_dict["SizeOfCode"]["Value"],
-        "size_of_initialized_data": optional_header_dict["SizeOfInitializedData"]["Value"],
-        "size_of_uninitialized_data": optional_header_dict["SizeOfUninitializedData"]["Value"],
-        "address_of_entry_point": optional_header_dict["AddressOfEntryPoint"]["Value"],
-        "base_of_code": optional_header_dict["BaseOfCode"]["Value"],
-        "base_of_data": optional_header_dict["BaseOfData"]["Value"],
-        "image_base": optional_header_dict["ImageBase"]["Value"],
-        "section_alignment": optional_header_dict["SectionAlignment"]["Value"],
-        "file_alignment": optional_header_dict["FileAlignment"]["Value"],
-        "major_operating_system_version": optional_header_dict["MajorOperatingSystemVersion"]["Value"],
-        "minor_operating_system_version": optional_header_dict["MinorOperatingSystemVersion"]["Value"],
-        "major_image_version": optional_header_dict["MajorImageVersion"]["Value"],
-        "minor_image_version": optional_header_dict["MinorImageVersion"]["Value"],
-        "major_subsystem_version": optional_header_dict["MajorSubsystemVersion"]["Value"],
-        "minor_subsystem_version": optional_header_dict["MinorSubsystemVersion"]["Value"],
-        "size_of_image": optional_header_dict["SizeOfImage"]["Value"],
-        "size_of_headers": optional_header_dict["SizeOfHeaders"]["Value"],
-        "checksum": optional_header_dict["CheckSum"]["Value"],
-        "subsystem": pefile.SUBSYSTEM_TYPE[optional_header_dict["Subsystem"]["Value"]],
-        "size_of_stack_reserve": optional_header_dict["SizeOfStackReserve"]["Value"],
-        "size_of_stack_commit": optional_header_dict["SizeOfStackCommit"]["Value"],
-        "size_of_heap_reserve": optional_header_dict["SizeOfHeapReserve"]["Value"],
-        "size_of_heap_commit": optional_header_dict["SizeOfHeapCommit"]["Value"],
-        "loader_flags": optional_header_dict["LoaderFlags"]["Value"],
-        "number_of_rva_and_sizes": optional_header_dict["NumberOfRvaAndSizes"]["Value"],
-        "dll_characteristics": parse_optional_header_dll_characteristics(
-            optional_header_dict["DllCharacteristics"]["Value"])
+        "magic": _get_attr("Magic"),
+        "major_linker_version": _get_attr("MajorLinkerVersion"),
+        "minor_linker_version": _get_attr("MinorLinkerVersion"),
+        "size_of_code": _get_attr("SizeOfCode"),
+        "size_of_initialized_data": _get_attr("SizeOfInitializedData"),
+        "size_of_uninitialized_data": _get_attr("SizeOfUninitializedData"),
+        "address_of_entry_point": _get_attr("AddressOfEntryPoint"),
+        "base_of_code": _get_attr("BaseOfCode"),
+        "base_of_data": _get_attr("BaseOfData", nullable=True),
+        "image_base": _get_attr("ImageBase"),
+        "section_alignment": _get_attr("SectionAlignment"),
+        "file_alignment": _get_attr("FileAlignment"),
+        "major_operating_system_version": _get_attr("MajorOperatingSystemVersion"),
+        "minor_operating_system_version": _get_attr("MinorOperatingSystemVersion"),
+        "major_image_version": _get_attr("MajorImageVersion"),
+        "minor_image_version": _get_attr("MinorImageVersion"),
+        "major_subsystem_version": _get_attr("MajorSubsystemVersion"),
+        "minor_subsystem_version": _get_attr("MinorSubsystemVersion"),
+        "size_of_image": _get_attr("SizeOfImage"),
+        "size_of_headers": _get_attr("SizeOfHeaders"),
+        "checksum": _get_attr("CheckSum"),
+        "subsystem": pefile.SUBSYSTEM_TYPE.get(_get_attr("Subsystem")),
+        "size_of_stack_reserve": _get_attr("SizeOfStackReserve"),
+        "size_of_stack_commit": _get_attr("SizeOfStackCommit"),
+        "size_of_heap_reserve": _get_attr("SizeOfHeapReserve"),
+        "size_of_heap_commit": _get_attr("SizeOfHeapCommit"),
+        "loader_flags": _get_attr("LoaderFlags"),
+        "number_of_rva_and_sizes": _get_attr("NumberOfRvaAndSizes"),
+        "dll_characteristics": parse_optional_header_dll_characteristics(_get_attr("DllCharacteristics"))
     }
 
 
@@ -309,7 +313,7 @@ def get_exports(pe: pefile.PE):
                     "ordinal": exp.ordinal,
                 }
                 results.append(obj)
-            except:
+            except AttributeError:
                 continue
     return results
 

@@ -10,6 +10,7 @@ def create_analysis(conn, file_id: int, filename: str):
                                   "VALUES (%s, %s, %s) RETURNING id", [
                                       file_id, filename, "processing"
                                   ]).fetchone()[0]
+        conn.commit()
     return analysis_id
 
 

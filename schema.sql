@@ -1,7 +1,7 @@
 CREATE TABLE files
 (
     "id"   SERIAL8 PRIMARY KEY,
-    "size" BIGINT
+    "size" BIGINT NOT NULL,
 );
 
 CREATE TYPE ANALYSIS_STATE AS ENUM ('processing', 'complete');
@@ -9,9 +9,9 @@ CREATE TYPE ANALYSIS_STATE AS ENUM ('processing', 'complete');
 CREATE TABLE file_hashes
 (
     "id"        SERIAL8 PRIMARY KEY,
-    "file_id"   BIGINT,
-    "algorithm" VARCHAR,
-    "value"     VARCHAR,
+    "file_id"   BIGINT  NOT NULL,
+    "algorithm" VARCHAR NOT NULL,
+    "value"     VARCHAR NOT NULL,
     CONSTRAINT "file_id"
         FOREIGN KEY ("file_id") REFERENCES files ("id")
             ON DELETE CASCADE,
@@ -21,9 +21,9 @@ CREATE TABLE file_hashes
 CREATE TABLE "analyses"
 (
     "id"       SERIAL8 PRIMARY KEY,
-    "file_id"  BIGINT,
-    "filename" VARCHAR,
-    "state"    ANALYSIS_STATE,
+    "file_id"  BIGINT         NOT NULL,
+    "filename" VARCHAR        NOT NULL,
+    "state"    ANALYSIS_STATE NOT NULL,
     CONSTRAINT "file_id"
         FOREIGN KEY ("file_id") REFERENCES files ("id")
             ON DELETE CASCADE
@@ -33,7 +33,7 @@ CREATE TABLE "basic_information"
 (
     -- 1-1 relationship
     "analysis_id"       BIGINT PRIMARY KEY,
-    "entropy"           FLOAT,
+    "entropy"           FLOAT NOT NULL,
     "imphash"           VARCHAR,
     "company"           VARCHAR,
     "description"       VARCHAR,
@@ -53,12 +53,12 @@ CREATE TABLE file_headers
 (
     -- 1-1 relationship
     "analysis_id"             BIGINT PRIMARY KEY,
-    "machine"                 VARCHAR,
-    "compiled_at"             TIMESTAMP,
-    "sections"                INT,
-    "pointer_to_symbol_table" BIGINT,
-    "number_of_symbols"       BIGINT,
-    "size_of_optional_header" BIGINT,
+    "machine"                 VARCHAR   NOT NULL,
+    "compiled_at"             TIMESTAMP NOT NULL,
+    "sections"                INT       NOT NULL,
+    "pointer_to_symbol_table" BIGINT    NOT NULL,
+    "number_of_symbols"       BIGINT    NOT NULL,
+    "size_of_optional_header" BIGINT    NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -68,21 +68,21 @@ CREATE TABLE "file_header_characteristics"
 (
     -- 1-1 relationship
     "analysis_id"                        BIGINT PRIMARY KEY,
-    "relocation_stripped"                BOOLEAN,
-    "executable"                         BOOLEAN,
-    "coff_line_numbers_stripped"         BOOLEAN,
-    "coff_local_symbol_table_stripped"   BOOLEAN,
-    "aggressive_trim_working_set"        BOOLEAN,
-    "large_address_aware"                BOOLEAN,
-    "little_endian"                      BOOLEAN,
-    "32bit"                              BOOLEAN,
-    "debug_stripped"                     BOOLEAN,
-    "load_to_swap_if_on_removable_media" BOOLEAN,
-    "load_to_swap_if_on_network"         BOOLEAN,
-    "system_image"                       BOOLEAN,
-    "dynamic_link_library"               BOOLEAN,
-    "uniprocessor_only"                  BOOLEAN,
-    "big_endian"                         BOOLEAN,
+    "relocation_stripped"                BOOLEAN NOT NULL,
+    "executable"                         BOOLEAN NOT NULL,
+    "coff_line_numbers_stripped"         BOOLEAN NOT NULL,
+    "coff_local_symbol_table_stripped"   BOOLEAN NOT NULL,
+    "aggressive_trim_working_set"        BOOLEAN NOT NULL,
+    "large_address_aware"                BOOLEAN NOT NULL,
+    "little_endian"                      BOOLEAN NOT NULL,
+    "32bit"                              BOOLEAN NOT NULL,
+    "debug_stripped"                     BOOLEAN NOT NULL,
+    "load_to_swap_if_on_removable_media" BOOLEAN NOT NULL,
+    "load_to_swap_if_on_network"         BOOLEAN NOT NULL,
+    "system_image"                       BOOLEAN NOT NULL,
+    "dynamic_link_library"               BOOLEAN NOT NULL,
+    "uniprocessor_only"                  BOOLEAN NOT NULL,
+    "big_endian"                         BOOLEAN NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -92,34 +92,34 @@ CREATE TABLE optional_headers
 (
     -- 1-1 relationship
     "analysis_id"                    BIGINT PRIMARY KEY,
-    "magic"                          INT,
-    "major_linker_version"           INT,
-    "minor_linker_version"           INT,
-    "size_of_code"                   BIGINT,
-    "size_of_initialized_data"       BIGINT,
-    "size_of_uninitialized_data"     BIGINT,
-    "address_of_entry_point"         BIGINT,
-    "base_of_code"                   BIGINT,
+    "magic"                          INT     NOT NULL,
+    "major_linker_version"           INT     NOT NULL,
+    "minor_linker_version"           INT     NOT NULL,
+    "size_of_code"                   BIGINT  NOT NULL,
+    "size_of_initialized_data"       BIGINT  NOT NULL,
+    "size_of_uninitialized_data"     BIGINT  NOT NULL,
+    "address_of_entry_point"         BIGINT  NOT NULL,
+    "base_of_code"                   BIGINT  NOT NULL,
     "base_of_data"                   BIGINT,
-    "image_base"                     BIGINT,
-    "section_alignment"              BIGINT,
-    "file_alignment"                 BIGINT,
-    "major_operating_system_version" INT,
-    "minor_operating_system_version" INT,
-    "major_image_version"            INT,
-    "minor_image_version"            INT,
-    "major_subsystem_version"        INT,
-    "minor_subsystem_version"        INT,
-    "size_of_image"                  BIGINT,
-    "size_of_headers"                BIGINT,
-    "checksum"                       BIGINT,
-    "subsystem"                      VARCHAR,
-    "size_of_stack_reserve"          BIGINT,
-    "size_of_stack_commit"           BIGINT,
-    "size_of_heap_reserve"           BIGINT,
-    "size_of_heap_commit"            BIGINT,
-    "loader_flags"                   INT,
-    "number_of_rva_and_sizes"        BIGINT,
+    "image_base"                     BIGINT  NOT NULL,
+    "section_alignment"              BIGINT  NOT NULL,
+    "file_alignment"                 BIGINT  NOT NULL,
+    "major_operating_system_version" INT     NOT NULL,
+    "minor_operating_system_version" INT     NOT NULL,
+    "major_image_version"            INT     NOT NULL,
+    "minor_image_version"            INT     NOT NULL,
+    "major_subsystem_version"        INT     NOT NULL,
+    "minor_subsystem_version"        INT     NOT NULL,
+    "size_of_image"                  BIGINT  NOT NULL,
+    "size_of_headers"                BIGINT  NOT NULL,
+    "checksum"                       BIGINT  NOT NULL,
+    "subsystem"                      VARCHAR NOT NULL,
+    "size_of_stack_reserve"          BIGINT  NOT NULL,
+    "size_of_stack_commit"           BIGINT  NOT NULL,
+    "size_of_heap_reserve"           BIGINT  NOT NULL,
+    "size_of_heap_commit"            BIGINT  NOT NULL,
+    "loader_flags"                   INT     NOT NULL,
+    "number_of_rva_and_sizes"        BIGINT  NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -129,17 +129,17 @@ CREATE TABLE "optional_header_dll_characteristics"
 (
     -- 1-1 relationship
     "analysis_id"                        BIGINT PRIMARY KEY,
-    "high_entropy_virtual_address_space" BOOLEAN,
-    "dynamic_base"                       BOOLEAN,
-    "force_code_integrity"               BOOLEAN,
-    "nx_compatible"                      BOOLEAN,
-    "no_isolation"                       BOOLEAN,
-    "no_structured_exception_handling"   BOOLEAN,
-    "no_bind"                            BOOLEAN,
-    "force_app_container"                BOOLEAN,
-    "wdm_driver"                         BOOLEAN,
-    "supports_control_flow_guard"        BOOLEAN,
-    "terminal_server_aware"              BOOLEAN,
+    "high_entropy_virtual_address_space" BOOLEAN NOT NULL,
+    "dynamic_base"                       BOOLEAN NOT NULL,
+    "force_code_integrity"               BOOLEAN NOT NULL,
+    "nx_compatible"                      BOOLEAN NOT NULL,
+    "no_isolation"                       BOOLEAN NOT NULL,
+    "no_structured_exception_handling"   BOOLEAN NOT NULL,
+    "no_bind"                            BOOLEAN NOT NULL,
+    "force_app_container"                BOOLEAN NOT NULL,
+    "wdm_driver"                         BOOLEAN NOT NULL,
+    "supports_control_flow_guard"        BOOLEAN NOT NULL,
+    "terminal_server_aware"              BOOLEAN NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -148,9 +148,9 @@ CREATE TABLE "optional_header_dll_characteristics"
 CREATE TABLE "imports"
 (
     "id"          SERIAL8 PRIMARY KEY,
-    "analysis_id" BIGINT,
-    "name"        VARCHAR,
-    "address"     BIGINT,
+    "analysis_id" BIGINT  NOT NULL,
+    "name"        VARCHAR NOT NULL,
+    "address"     BIGINT  NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -159,10 +159,10 @@ CREATE TABLE "imports"
 CREATE TABLE "exports"
 (
     "id"          SERIAL8 PRIMARY KEY,
-    "analysis_id" BIGINT,
-    "name"        VARCHAR,
-    "address"     BIGINT,
-    "ordinal"     INT,
+    "analysis_id" BIGINT  NOT NULL,
+    "name"        VARCHAR NOT NULL,
+    "address"     BIGINT  NOT NULL,
+    "ordinal"     INT     NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
             ON DELETE CASCADE
@@ -171,14 +171,14 @@ CREATE TABLE "exports"
 CREATE TABLE "resources"
 (
     "id"               SERIAL8 PRIMARY KEY,
-    "analysis_id"      BIGINT,
-    "local_id"         INT,
+    "analysis_id"      BIGINT  NOT NULL,
+    "local_id"         INT     NOT NULL,
     "name"             VARCHAR,
-    "primary_language" VARCHAR,
-    "sub_language"     VARCHAR,
+    "primary_language" VARCHAR NOT NULL,
+    "sub_language"     VARCHAR NOT NULL,
     "type"             VARCHAR,
-    "offset"           BIGINT,
-    "size"             BIGINT,
+    "offset"           BIGINT  NOT NULL,
+    "size"             BIGINT  NOT NULL,
 
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
@@ -188,9 +188,9 @@ CREATE TABLE "resources"
 CREATE TABLE "resource_hashes"
 (
     "id"          SERIAL8 PRIMARY KEY,
-    "resource_id" BIGINT,
-    "algorithm"   VARCHAR,
-    "value"       VARCHAR,
+    "resource_id" BIGINT  NOT NULL,
+    "algorithm"   VARCHAR NOT NULL,
+    "value"       VARCHAR NOT NULL,
     CONSTRAINT "resource_id"
         FOREIGN KEY ("resource_id") REFERENCES resources ("id")
             ON DELETE CASCADE,
@@ -200,13 +200,13 @@ CREATE TABLE "resource_hashes"
 CREATE TABLE "sections"
 (
     "id"              SERIAL8 PRIMARY KEY,
-    "analysis_id"     BIGINT,
-    "virtual_size"    BIGINT,
-    "virtual_address" BIGINT,
-    "raw_size"        BIGINT,
-    "raw_address"     BIGINT,
-    "name"            VARCHAR,
-    "entropy"         FLOAT,
+    "analysis_id"     BIGINT  NOT NULL,
+    "virtual_size"    BIGINT  NOT NULL,
+    "virtual_address" BIGINT  NOT NULL,
+    "raw_size"        BIGINT  NOT NULL,
+    "raw_address"     BIGINT  NOT NULL,
+    "name"            VARCHAR NOT NULL,
+    "entropy"         FLOAT   NOT NULL,
 
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES "analyses" ("id")
@@ -216,9 +216,9 @@ CREATE TABLE "sections"
 CREATE TABLE "section_hashes"
 (
     "id"         SERIAL8 PRIMARY KEY,
-    "section_id" BIGINT,
-    "algorithm"  VARCHAR,
-    "value"      VARCHAR,
+    "section_id" BIGINT NOT NULL,
+    "algorithm"  VARCHAR NOT NULL,
+    "value"      VARCHAR NOT NULL,
     CONSTRAINT "section_id"
         FOREIGN KEY ("section_id") REFERENCES sections ("id")
             ON DELETE CASCADE,
@@ -229,27 +229,27 @@ CREATE TABLE "section_characteristics"
 (
     -- 1-1 relationship.
     "section_id"                               BIGINT PRIMARY KEY,
-    "object_file_pad_to_next_boundary"         BOOLEAN,
-    "has_executable_code"                      BOOLEAN,
-    "has_initialized_data"                     BOOLEAN,
-    "has_uninitialized_data"                   BOOLEAN,
-    "object_file_section_contains_info"        BOOLEAN,
-    "object_file_section_to_remove_from_image" BOOLEAN,
-    "object_file_section_includes_comdat"      BOOLEAN,
-    "has_global_pointer_data"                  BOOLEAN,
-    "memory_purgeable"                         BOOLEAN,
-    "memory_16bit"                             BOOLEAN,
-    "memory_locked"                            BOOLEAN,
-    "memory_preload"                           BOOLEAN,
-    "object_file_alignment_bytes"              INT,
-    "contains_extended_relocations"            BOOLEAN,
-    "discardable"                              BOOLEAN,
-    "cacheable"                                BOOLEAN,
-    "pageable"                                 BOOLEAN,
-    "shareable"                                BOOLEAN,
-    "executable"                               BOOLEAN,
-    "readable"                                 BOOLEAN,
-    "writeable"                                BOOLEAN,
+    "object_file_pad_to_next_boundary"         BOOLEAN NOT NULL,
+    "has_executable_code"                      BOOLEAN NOT NULL,
+    "has_initialized_data"                     BOOLEAN NOT NULL,
+    "has_uninitialized_data"                   BOOLEAN NOT NULL,
+    "object_file_section_contains_info"        BOOLEAN NOT NULL,
+    "object_file_section_to_remove_from_image" BOOLEAN NOT NULL,
+    "object_file_section_includes_comdat"      BOOLEAN NOT NULL,
+    "has_global_pointer_data"                  BOOLEAN NOT NULL,
+    "memory_purgeable"                         BOOLEAN NOT NULL,
+    "memory_16bit"                             BOOLEAN NOT NULL,
+    "memory_locked"                            BOOLEAN NOT NULL,
+    "memory_preload"                           BOOLEAN NOT NULL,
+    "object_file_alignment_bytes"              INT NOT NULL,
+    "contains_extended_relocations"            BOOLEAN NOT NULL,
+    "discardable"                              BOOLEAN NOT NULL,
+    "cacheable"                                BOOLEAN NOT NULL,
+    "pageable"                                 BOOLEAN NOT NULL,
+    "shareable"                                BOOLEAN NOT NULL,
+    "executable"                               BOOLEAN NOT NULL,
+    "readable"                                 BOOLEAN NOT NULL,
+    "writeable"                                BOOLEAN NOT NULL,
     CONSTRAINT "section_id"
         FOREIGN KEY ("section_id") REFERENCES sections ("id")
             ON DELETE CASCADE
@@ -258,7 +258,7 @@ CREATE TABLE "section_characteristics"
 CREATE TABLE "strings"
 (
     "id"          SERIAL8 PRIMARY KEY,
-    "analysis_id" BIGINT,
+    "analysis_id" BIGINT NOT NULL,
     "score"       FLOAT,
     "data"        VARCHAR,
     CONSTRAINT "analysis_id"
@@ -269,7 +269,7 @@ CREATE TABLE "strings"
 CREATE TABLE "string_tags"
 (
     "id"        SERIAL8 PRIMARY KEY,
-    "string_id" BIGINT,
+    "string_id" BIGINT NOT NULL,
     "tag"       VARCHAR,
     CONSTRAINT "string_id"
         FOREIGN KEY ("string_id") REFERENCES strings ("id")
@@ -279,7 +279,7 @@ CREATE TABLE "string_tags"
 CREATE TABLE "string_matches"
 (
     "id"         SERIAL8 PRIMARY KEY,
-    "string_id"  BIGINT,
+    "string_id"  BIGINT NOT NULL,
     "start"      INT,
     "end"        INT,
     "definition" VARCHAR,
