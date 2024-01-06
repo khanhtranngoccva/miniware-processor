@@ -14,8 +14,6 @@ def analyze_file(path: str):
     with open(path, "rb") as file:
         buf = file.read()
 
-    for data in pe.VS_FIXEDFILEINFO:
-        print(data.dump_dict())
     out = {
         # Removed in the actual code.
         # "hashes": get_hashes(buf),

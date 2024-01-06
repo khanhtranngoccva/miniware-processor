@@ -3,29 +3,28 @@ from helpers import definition_helper
 import types
 import pkgutil
 import os
+import importlib
 
 definitions: types.ModuleType
 
+def import_modules(package: types.ModuleType):
+    for _, module_name, ispkg in pkgutil.iter_modules(package.__path__, prefix=f"{package.__name__}."):
+        module = importlib.import_module(module_name)
 
-def module_dir_scan(module_dir: types.ModuleType):
-    paths = []
-    for parent, _, __ in os.walk(module_dir.__path__[0]):
-        paths.append(parent)
-
-    for loader, module_name, is_pkg in pkgutil.walk_packages(paths):
-        module_dir = loader.find_module(module_name).load_module(module_name)
-        yield module_dir
+        if ispkg:
+            for sub_module in import_modules(module):
+                yield sub_module
+        yield module
 
 
 def load_definitions():
     res = []
-    for module in module_dir_scan(definitions):
+    for module in import_modules(definitions):
         for name in module.__dir__():
             entry = getattr(module, name)
             if isinstance(entry, definition_helper.Definition):
                 res.append(entry)
     return res
-
 
 loaded_definitions = load_definitions()
 

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import json
 import pprint
 
@@ -17,3 +18,13 @@ if __name__ == '__main__':
     with open("./test2.json", "r") as file:
         data = json.load(file)
     pprint.pp(filter_true_nodes([data[1]]))
+=======
+import pkgutil
+import importlib
+import definitions
+import os
+
+
+
+print(import_modules(definitions))
+>>>>>>> Stashed changes
