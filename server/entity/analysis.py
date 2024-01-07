@@ -21,12 +21,12 @@ def get_complete_analysis(conn, analysis_id: int):
         query = "SELECT * FROM full_analyses WHERE id = %s"
         analysis = cur.execute(query, [analysis_id]).fetchone()
 
-    if analysis is None:
-        fallback = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
-        if fallback is None:
-            raise errors.NotFoundError
-        else:
-            raise errors.ResourceNotReadyError
+        if analysis is None:
+            fallback = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
+            if fallback is None:
+                raise errors.NotFoundError
+            else:
+                raise errors.ResourceNotReadyError
 
     return analysis
 
