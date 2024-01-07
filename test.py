@@ -1,30 +1,6 @@
-<<<<<<< Updated upstream
-import json
+import pefile_processor
 import pprint
 
+results = pefile_processor.analyze_file("./test_coccoc.exe")
 
-def filter_true_nodes(nodelist):
-    result = []
-    for node in nodelist:
-        if node.get('success'):
-            result.append({
-                **node,
-                "children": filter_true_nodes(node.get('children') or [])
-            })
-    return result
-
-
-if __name__ == '__main__':
-    with open("./test2.json", "r") as file:
-        data = json.load(file)
-    pprint.pp(filter_true_nodes([data[1]]))
-=======
-import pkgutil
-import importlib
-import definitions
-import os
-
-
-
-print(import_modules(definitions))
->>>>>>> Stashed changes
+pprint.pp(results["strings"])

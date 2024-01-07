@@ -258,6 +258,8 @@ CREATE TABLE "section_characteristics"
 CREATE TABLE "strings"
 (
     "id"          SERIAL8 PRIMARY KEY,
+    -- Optimization for multiple insert AND allow sorting based on original order
+    "local_order"    BIGINT NOT NULL,
     "analysis_id" BIGINT NOT NULL,
     "score"       FLOAT,
     "data"        VARCHAR,
