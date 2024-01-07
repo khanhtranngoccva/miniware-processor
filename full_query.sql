@@ -63,4 +63,6 @@ FROM analyses
 WHERE state = 'complete';
 
 
-SELECT * FROM full_analyses WHERE id = 5
+SELECT *
+FROM full_analyses
+WHERE id = 5
