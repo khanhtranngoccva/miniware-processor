@@ -247,7 +247,7 @@ def parse_section_characteristics(characteristic_flag: int):
         "memory_16bit": bit_array[17],
         "memory_locked": bit_array[18],
         "memory_preload": bit_array[19],
-        "object_file_alignment_bytes": int("".join(map(lambda x: str(int(x)), bit_array[20:24])), 2),
+        "object_file_alignment_bytes": 2 ** (int("".join(map(lambda x: str(int(x)), reversed(bit_array[20:24]))), 2) - 1),
         "contains_extended_relocations": bit_array[24],
         "discardable": bit_array[25],
         "cacheable": not bit_array[26],

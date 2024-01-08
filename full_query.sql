@@ -7,7 +7,7 @@ SELECT analyses.*,
        COALESCE(TO_JSON(exports.export_data), TO_JSON(ARRAY []::record[]))     AS exports,
        COALESCE(TO_JSON(resources.resource_data), TO_JSON(ARRAY []::record[])) AS resources,
        COALESCE(TO_JSON(strings.strings_data), TO_JSON(ARRAY []::record[]))    AS strings,
-       COALESCE(TO_JSON(sections.section_data), TO_JSON(ARRAY []::record[]))   AS sections
+       COALESCE(TO_JSON(sections.section_data), TO_JSON(ARRAY []::record[]))                AS sections
 FROM analyses
 -- basic information
          INNER JOIN basic_information ON analyses.id = basic_information.analysis_id
@@ -54,13 +54,30 @@ FROM analyses
                           GROUP BY strings.id) strings
                     GROUP BY analysis_id) strings ON strings.analysis_id = analyses.id
 -- sections
-         LEFT JOIN (SELECT analysis_id, TO_JSON(ARRAY_AGG(sections)) AS section_data
-                    FROM (SELECT sections.*, ARRAY_REMOVE(ARRAY_AGG(section_hashes), NULL) AS hashes
+         LEFT JOIN (SELECT sections.analysis_id, to_json(array_agg(sections)) as section_data
+                    FROM (SELECT sections.*,
+                                 to_json(array_agg(section_hashes)) as hashes,
+                                 to_json(section_characteristics)   as characteristics
                           FROM sections
+                                   INNER JOIN section_characteristics
+                                              ON sections.id = section_characteristics.section_id
                                    LEFT JOIN section_hashes ON sections.id = section_hashes.section_id
-                          GROUP BY sections.id) sections
-                    GROUP BY analysis_id) sections ON sections.analysis_id = analyses.id
+                          GROUP BY sections.id, section_characteristics.section_id) sections
+                    GROUP BY sections.analysis_id) sections
+                   ON sections.analysis_id = analyses.id
 WHERE state = 'complete';
 
 
-SELECT * FROM full_analyses WHERE id = 5
+SELECT *
+FROM full_analyses
+WHERE id = 3;
+
+SELECT sections.*,
+       to_json(array_agg(section_hashes)) as hashes,
+       to_json(section_characteristics)   as characteristics
+FROM sections
+         INNER JOIN section_characteristics ON sections.id = section_characteristics.section_id
+         LEFT JOIN section_hashes ON sections.id = section_hashes.section_id
+GROUP BY sections.id, section_characteristics.section_id;
+
+SELECT * from section_characteristics
