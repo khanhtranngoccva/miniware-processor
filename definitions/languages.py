@@ -15,26 +15,34 @@ except LookupError:
 def english_corpus(raw_string: str):
     res = []
 
-    r1 = re.compile(
-        # Camel case
-        r"(?<=[a-z])(?=[A-Z])"
-        # Dealing with non-word characters
-        r"|[\W_]+"
-    )
+    replaced = re.sub(r"[_\W]", " ", raw_string)
+    groups = list(map(lambda obj: obj.span(), re.finditer(r"\S+", replaced)))
 
-    replaced = r1.sub(" ", raw_string)
-    matches = re.compile(r"\S+").finditer(replaced)
+    styles = [
+        re.compile(r"^[A-Z]?[a-z]+$"),
+        re.compile(r"^[A-Z]+$")
+    ]
 
-    for match in matches:
-        # Avoid 1-letter words qualifying
-        token = match.group()
-        if len(token) < 4:
-            continue
-        if token.lower() in english_words or token in english_words:
-            res.append([match.start(), match.end()])
+    def match_style(string):
+        for style in styles:
+            if style.match(string) is not None:
+                return True
+        return False
+
+    for group_start, group_end in groups:
+        for i in range(group_start, group_end):
+            for j in range(i, group_end + 1):
+                if j - i < 3:
+                    continue
+                str_slice = replaced[i:j]
+                if str_slice.lower() in english_words and match_style(str_slice):
+                    res.append([i, j])
 
     return res
 
 
 if __name__ == '__main__':
-    print(english_corpus("ThisIs_A,Word"))
+    input_str = '<requestedExecutionLevel level="asInvoker" />'
+    res = english_corpus(input_str)
+    for start, end in res:
+        print(input_str[start:end])
