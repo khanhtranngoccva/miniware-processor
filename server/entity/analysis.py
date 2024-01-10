@@ -1,4 +1,6 @@
 import pprint
+
+import server.entity.strings
 from helpers import errors
 import psycopg.rows
 import pefile_processor
@@ -19,12 +21,12 @@ def get_complete_analysis(conn, analysis_id: int):
         query = "SELECT * FROM full_analyses WHERE id = %s"
         analysis = cur.execute(query, [analysis_id]).fetchone()
 
-    if analysis is None:
-        fallback = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
-        if fallback is None:
-            raise errors.NotFoundError
-        else:
-            raise errors.ResourceNotReadyError
+        if analysis is None:
+            fallback = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
+            if fallback is None:
+                raise errors.NotFoundError
+            else:
+                raise errors.ResourceNotReadyError
 
     return analysis
 
@@ -223,29 +225,33 @@ def initiate_analysis(conn, analysis_id: int, file_path: str):
                 ])
 
         strings = output["strings"]
-        for string in strings:
-            string_id = cur.execute(
-                "INSERT INTO strings (analysis_id, score, data) VALUES (%s, %s, %s) RETURNING id",
-                [analysis_id, string["score"], string["data"]]
-            ).fetchone()[0]
+        server.entity.strings.insert_strings(conn,
+                                             analysis_id=analysis_id,
+                                             strings=strings)
+        # for string in strings:
+        #     string_id = cur.execute(
+        #         "INSERT INTO strings (analysis_id, score, data) VALUES (%s, %s, %s) RETURNING id",
+        #         [analysis_id, string["score"], string["data"]]
+        #     ).fetchone()[0]
+        #
+        #     string_analysis = string["analysis"]
+        #     string_tags = string_analysis["tags"]
+        #     string_matches = string_analysis["matches"]
+        #
+        #     for tag in string_tags:
+        #         cur.execute("INSERT INTO string_tags (string_id, tag) VALUES (%s, %s)", [
+        #             string_id, tag
+        #         ])
+        #
+        #     for match in string_matches:
+        #         match_start, match_end = match["match"]
+        #         match_definition = match["definition"]
+        #
+        #         cur.execute(
+        #             "INSERT INTO string_matches (string_id, start, \"end\", definition) VALUES (%s, %s, %s, %s)", [
+        #                 string_id, match_start, match_end, match_definition
+        #             ])
 
-            string_analysis = string["analysis"]
-            string_tags = string_analysis["tags"]
-            string_matches = string_analysis["matches"]
-
-            for tag in string_tags:
-                cur.execute("INSERT INTO string_tags (string_id, tag) VALUES (%s, %s)", [
-                    string_id, tag
-                ])
-
-            for match in string_matches:
-                match_start, match_end = match["match"]
-                match_definition = match["definition"]
-
-                cur.execute(
-                    "INSERT INTO string_matches (string_id, start, \"end\", definition) VALUES (%s, %s, %s, %s)", [
-                        string_id, match_start, match_end, match_definition
-                    ])
         complete_analysis(conn, analysis_id)
 
 

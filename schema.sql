@@ -1,7 +1,7 @@
 CREATE TABLE files
 (
     "id"   SERIAL8 PRIMARY KEY,
-    "size" BIGINT NOT NULL,
+    "size" BIGINT NOT NULL
 );
 
 CREATE TYPE ANALYSIS_STATE AS ENUM ('processing', 'complete');
@@ -216,7 +216,7 @@ CREATE TABLE "sections"
 CREATE TABLE "section_hashes"
 (
     "id"         SERIAL8 PRIMARY KEY,
-    "section_id" BIGINT NOT NULL,
+    "section_id" BIGINT  NOT NULL,
     "algorithm"  VARCHAR NOT NULL,
     "value"      VARCHAR NOT NULL,
     CONSTRAINT "section_id"
@@ -241,7 +241,7 @@ CREATE TABLE "section_characteristics"
     "memory_16bit"                             BOOLEAN NOT NULL,
     "memory_locked"                            BOOLEAN NOT NULL,
     "memory_preload"                           BOOLEAN NOT NULL,
-    "object_file_alignment_bytes"              INT NOT NULL,
+    "object_file_alignment_bytes"              INT     NOT NULL,
     "contains_extended_relocations"            BOOLEAN NOT NULL,
     "discardable"                              BOOLEAN NOT NULL,
     "cacheable"                                BOOLEAN NOT NULL,
@@ -258,6 +258,8 @@ CREATE TABLE "section_characteristics"
 CREATE TABLE "strings"
 (
     "id"          SERIAL8 PRIMARY KEY,
+    -- Optimization for multiple insert AND allow sorting based on original order
+    "local_order"    BIGINT NOT NULL,
     "analysis_id" BIGINT NOT NULL,
     "score"       FLOAT,
     "data"        VARCHAR,
@@ -288,3 +290,63 @@ CREATE TABLE "string_matches"
             ON DELETE CASCADE
 );
 
+
+CREATE TABLE "capa_entries"
+(
+    "id"             SERIAL8 PRIMARY KEY,
+    "analysis_id"    BIGINT  NOT NULL,
+    "rule_name"      varchar NOT NULL,
+    "rule_namespace" varchar NOT NULL,
+    "rule_scope"     varchar NOT NULL,
+    CONSTRAINT "analysis_id"
+        FOREIGN KEY ("analysis_id") REFERENCES analyses ("id")
+            ON DELETE CASCADE
+);
+
+CREATE TYPE LOCATION_TYPE AS ENUM ('absolute');
+
+CREATE TABLE "capa_matches"
+(
+    "id"             SERIAL8 PRIMARY KEY,
+    "capa_entry_id"  BIGINT        NOT NULL,
+    "location_type"  LOCATION_TYPE NOT NULL,
+    "location_value" BIGINT        NOT NULL,
+    CONSTRAINT "capa_entry_id"
+        FOREIGN KEY ("capa_entry_id") REFERENCES "capa_entries" ("id")
+            ON DELETE CASCADE
+);
+
+CREATE TYPE CAPA_NODE_TYPE AS ENUM ('feature', 'statement');
+
+CREATE TABLE "capa_nodes"
+(
+    "id"             SERIAL8 PRIMARY KEY,
+    -- Easy reference to match_id. Allows removing all at once once analysis object is deleted, and allow the frontend
+    -- to do the heavy work of reconstructing the node tree.
+    "capa_match_id"  BIGINT         NOT NULL,
+    -- root node has this attribute set to null.
+    "parent_node_id" BIGINT,
+    "success"        BOOLEAN        NOT NULL,
+    "type"           CAPA_NODE_TYPE NOT NULL,
+    -- combination of "subtype" and "type"
+    "subtype"        varchar        NOT NULL,
+    -- in case the type is "feature", otherwise null
+    "feature_data"   VARCHAR,
+    CONSTRAINT "capa_match_id"
+        FOREIGN KEY ("capa_match_id") REFERENCES "capa_matches" ("id")
+            ON DELETE CASCADE,
+    CONSTRAINT "parent_node_id"
+        FOREIGN KEY ("parent_node_id") REFERENCES "capa_nodes" ("id")
+            ON DELETE CASCADE
+);
+
+CREATE TABLE "capa_node_locations"
+(
+    "id"             SERIAL8 PRIMARY KEY,
+    "capa_node_id"   BIGINT        NOT NULL,
+    "location_type"  LOCATION_TYPE NOT NULL,
+    "location_value" BIGINT        NOT NULL,
+    CONSTRAINT "capa_node_id"
+        FOREIGN KEY ("capa_node_id") REFERENCES "capa_entries" ("id")
+            ON DELETE CASCADE
+);

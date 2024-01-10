@@ -40,14 +40,15 @@ def analyze_file(path: str):
 
 def get_fixed_file_info(pe):
     entries = {}
-    for file_info_list in pe.FileInfo:
-        for file_info in file_info_list:
-            if file_info.Key == b'StringFileInfo':
-                for st in file_info.StringTable:
-                    for _key, _value in st.entries.items():
-                        key = _key.decode("UTF-8")
-                        value = _value.decode("UTF-8")
-                        entries[key] = value
+    if hasattr(pe, "FileInfo"):
+        for file_info_list in pe.FileInfo:
+            for file_info in file_info_list:
+                if file_info.Key == b'StringFileInfo':
+                    for st in file_info.StringTable:
+                        for _key, _value in st.entries.items():
+                            key = _key.decode("UTF-8")
+                            value = _value.decode("UTF-8")
+                            entries[key] = value
     return {
         "company": entries.get("CompanyName"),
         "description": entries.get("FileDescription"),

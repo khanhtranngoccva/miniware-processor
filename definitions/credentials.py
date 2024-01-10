@@ -13,8 +13,6 @@ def email_address(raw_string: str):
         result_emails.append([entry.start(), entry.end()])
     return result_emails
 
-def dont_include_this():
-    pass
 
 if __name__ == '__main__':
     print("1")

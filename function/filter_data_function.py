@@ -5,7 +5,8 @@ from server.database import db_connect
 connection = db_connect()
 
 with open('data_function.json', 'r') as file:
-    data = json.load(file)
+    data = json.loads(file.read().rstrip("[0m\r\n "))
+
 
 def analyze_match_object(item):
     def analyze_match(match):
