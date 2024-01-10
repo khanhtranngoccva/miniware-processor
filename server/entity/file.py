@@ -4,7 +4,7 @@ import os
 import psycopg.rows
 
 from server import s3
-from pefile_processor import get_hashes
+from application.pefile_processor import get_hashes
 
 
 def get_asset_key_from_hash(sha256: str):

@@ -2,7 +2,7 @@ import math
 import re
 import subprocess
 import typing
-import string_analyzer
+from application import string_analyzer
 import pefile
 import datetime
 import hashlib

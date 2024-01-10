@@ -1,3 +1,5 @@
+CREATE EXTENSION ltree;
+
 CREATE TABLE files
 (
     "id"   SERIAL8 PRIMARY KEY,
@@ -259,7 +261,7 @@ CREATE TABLE "strings"
 (
     "id"          SERIAL8 PRIMARY KEY,
     -- Optimization for multiple insert AND allow sorting based on original order
-    "local_order"    BIGINT NOT NULL,
+    "local_order" BIGINT NOT NULL,
     "analysis_id" BIGINT NOT NULL,
     "score"       FLOAT,
     "data"        VARCHAR,
@@ -293,11 +295,13 @@ CREATE TABLE "string_matches"
 
 CREATE TABLE "capa_entries"
 (
-    "id"             SERIAL8 PRIMARY KEY,
-    "analysis_id"    BIGINT  NOT NULL,
-    "rule_name"      varchar NOT NULL,
-    "rule_namespace" varchar NOT NULL,
-    "rule_scope"     varchar NOT NULL,
+    "id"                      SERIAL8 PRIMARY KEY,
+    "_insert_operation_id"    BIGINT  NOT NULL,
+    "_insert_operation_order" BIGINT  NOT NULL,
+    "analysis_id"             BIGINT  NOT NULL,
+    "rule_name"               varchar NOT NULL,
+    "rule_namespace"          varchar,
+    "rule_scope"              varchar NOT NULL,
     CONSTRAINT "analysis_id"
         FOREIGN KEY ("analysis_id") REFERENCES analyses ("id")
             ON DELETE CASCADE
@@ -307,10 +311,12 @@ CREATE TYPE LOCATION_TYPE AS ENUM ('absolute');
 
 CREATE TABLE "capa_matches"
 (
-    "id"             SERIAL8 PRIMARY KEY,
-    "capa_entry_id"  BIGINT        NOT NULL,
-    "location_type"  LOCATION_TYPE NOT NULL,
-    "location_value" BIGINT        NOT NULL,
+    "id"                      SERIAL8 PRIMARY KEY,
+    "_insert_operation_id"    BIGINT        NOT NULL,
+    "_insert_operation_order" BIGINT        NOT NULL,
+    "capa_entry_id"           BIGINT        NOT NULL,
+    "location_type"           LOCATION_TYPE NOT NULL,
+    "location_value"          BIGINT        NOT NULL,
     CONSTRAINT "capa_entry_id"
         FOREIGN KEY ("capa_entry_id") REFERENCES "capa_entries" ("id")
             ON DELETE CASCADE
@@ -320,33 +326,37 @@ CREATE TYPE CAPA_NODE_TYPE AS ENUM ('feature', 'statement');
 
 CREATE TABLE "capa_nodes"
 (
-    "id"             SERIAL8 PRIMARY KEY,
-    -- Easy reference to match_id. Allows removing all at once once analysis object is deleted, and allow the frontend
-    -- to do the heavy work of reconstructing the node tree.
-    "capa_match_id"  BIGINT         NOT NULL,
-    -- root node has this attribute set to null.
-    "parent_node_id" BIGINT,
-    "success"        BOOLEAN        NOT NULL,
-    "type"           CAPA_NODE_TYPE NOT NULL,
+    "id"                      SERIAL8 PRIMARY KEY,
+    "_insert_operation_id"    BIGINT         NOT NULL,
+    "_insert_operation_order" BIGINT         NOT NULL,
+    "capa_match_id"           BIGINT         NOT NULL,
+    "path"                    ltree          NOT NULL,
+    "success"                 BOOLEAN        NOT NULL,
+    "type"                    CAPA_NODE_TYPE NOT NULL,
     -- combination of "subtype" and "type"
-    "subtype"        varchar        NOT NULL,
+    "subtype"                 varchar        NOT NULL,
     -- in case the type is "feature", otherwise null
-    "feature_data"   VARCHAR,
+    "feature_data"            json,
+    "description"             varchar,
     CONSTRAINT "capa_match_id"
         FOREIGN KEY ("capa_match_id") REFERENCES "capa_matches" ("id")
             ON DELETE CASCADE,
-    CONSTRAINT "parent_node_id"
-        FOREIGN KEY ("parent_node_id") REFERENCES "capa_nodes" ("id")
-            ON DELETE CASCADE
+    CONSTRAINT "unique_key_path"
+        UNIQUE ("capa_match_id", "path")
 );
 
 CREATE TABLE "capa_node_locations"
 (
-    "id"             SERIAL8 PRIMARY KEY,
-    "capa_node_id"   BIGINT        NOT NULL,
-    "location_type"  LOCATION_TYPE NOT NULL,
-    "location_value" BIGINT        NOT NULL,
+    "id"           SERIAL8 PRIMARY KEY,
+    "capa_node_id" BIGINT        NOT NULL,
+    "type"         LOCATION_TYPE NOT NULL,
+    "value"        BIGINT        NOT NULL,
     CONSTRAINT "capa_node_id"
-        FOREIGN KEY ("capa_node_id") REFERENCES "capa_entries" ("id")
+        FOREIGN KEY ("capa_node_id") REFERENCES "capa_nodes" ("id")
             ON DELETE CASCADE
+);
+
+CREATE TABLE "_insert_operation_ids"
+(
+    "id" SERIAL8 PRIMARY KEY
 );

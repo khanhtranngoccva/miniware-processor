@@ -46,6 +46,38 @@ FROM files
          INNER JOIN file_hashes ON files.id = file_hashes.file_id
 GROUP BY files.id;
 
+DROP VIEW IF EXISTS populated_capa_nodes CASCADE;
+CREATE OR REPLACE VIEW populated_capa_nodes AS
+SELECT capa_nodes.*,
+       COALESCE(json_agg(capa_node_locations) FILTER (WHERE capa_node_locations.id IS NOT NULL), '[]') as "locations"
+FROM capa_nodes
+         LEFT JOIN capa_node_locations ON capa_nodes.id = capa_node_locations.capa_node_id
+GROUP BY capa_nodes.id;
+
+DROP VIEW IF EXISTS populated_capa_matches CASCADE;
+CREATE OR REPLACE VIEW populated_capa_matches AS
+SELECT capa_matches.*, COALESCE(json_agg(pcn) FILTER (WHERE pcn.id IS NOT NULL), '[]') as "nodes"
+FROM capa_matches
+         LEFT JOIN populated_capa_nodes pcn on capa_matches.id = pcn.capa_match_id
+GROUP BY capa_matches.id;
+
+DROP VIEW IF EXISTS populated_capa_entries CASCADE;
+CREATE OR REPLACE VIEW populated_capa_entries AS
+SELECT capa_entries.*,
+       COALESCE(json_agg(populated_capa_matches) FILTER (WHERE populated_capa_matches.id IS NOT NULL),
+                '[]') as "matches"
+FROM capa_entries
+         LEFT JOIN populated_capa_matches on capa_entries.id = populated_capa_matches.capa_entry_id
+GROUP BY capa_entries.id;
+
+DROP VIEW IF EXISTS aggregated_capa_entries CASCADE;
+CREATE OR REPLACE VIEW aggregated_capa_entries AS
+SELECT analyses.id                                                     as analysis_id,
+       COALESCE(json_agg(pce) FILTER (WHERE pce.id IS NOT NULL), '[]') AS "capa_entry_data"
+FROM analyses
+         LEFT JOIN populated_capa_entries pce on analyses.id = pce.analysis_id
+GROUP BY analyses.id;
+
 DROP VIEW IF EXISTS full_analyses CASCADE;
 CREATE OR REPLACE VIEW full_analyses AS
 SELECT analyses.*,
@@ -57,7 +89,8 @@ SELECT analyses.*,
        COALESCE(TO_JSON(exports.export_data), TO_JSON(ARRAY []::record[]))     AS exports,
        COALESCE(TO_JSON(resources.resource_data), TO_JSON(ARRAY []::record[])) AS resources,
        aggregated_strings.string_data                                          as strings,
-       aggregated_sections.section_data                                        AS sections
+       aggregated_sections.section_data                                        AS sections,
+       ace.capa_entry_data                                                     AS capa
 FROM analyses
          -- file
          INNER JOIN populated_files ON populated_files.id = analyses.file_id
@@ -96,7 +129,8 @@ FROM analyses
 -- sections
          INNER JOIN aggregated_sections
                     ON aggregated_sections.analysis_id = analyses.id
+-- capa data
+         INNER JOIN aggregated_capa_entries ace on analyses.id = ace.analysis_id
 WHERE state = 'complete';
 
-SELECT COUNT(*) FROM populated_strings WHERE analysis_id = 7;
-SELECT COUNT(*) FROM strings WHERE analysis_id = 7;
+SELECT * FROM full_analyses WHERE id = 1;
