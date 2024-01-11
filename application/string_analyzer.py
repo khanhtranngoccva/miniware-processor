@@ -7,6 +7,7 @@ import importlib
 
 definitions: types.ModuleType
 
+
 def import_modules(package: types.ModuleType):
     for _, module_name, ispkg in pkgutil.iter_modules(package.__path__, prefix=f"{package.__name__}."):
         module = importlib.import_module(module_name)
@@ -25,6 +26,7 @@ def load_definitions():
             if isinstance(entry, definition_helper.Definition):
                 res.append(entry)
     return res
+
 
 loaded_definitions = load_definitions()
 
@@ -48,8 +50,3 @@ def analyze_string(data: str):
         "tags": [*result],
         "matches": [*matches]
     }
-
-
-if __name__ == '__main__':
-    for i in module_dir_scan(definitions):
-        print(i)

@@ -1,1 +1,1 @@
-DELETE FROM strings WHERE analysis_id = 2;
+SELECT * FROM capa_nodes ORDER BY capa_match_id, path asc;

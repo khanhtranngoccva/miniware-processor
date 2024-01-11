@@ -3,7 +3,8 @@ import pprint
 import server.entity.strings
 from helpers import errors
 import psycopg.rows
-import pefile_processor
+from application import pefile_processor, capa_processor
+import server.entity.capa_entries
 
 
 def create_analysis(conn, file_id: int, filename: str):
@@ -33,6 +34,7 @@ def get_complete_analysis(conn, analysis_id: int):
 
 def initiate_analysis(conn, analysis_id: int, file_path: str):
     output = pefile_processor.analyze_file(file_path)
+    capa_output = capa_processor.analyze_file(file_path)
 
     with conn.cursor() as cur:
         file_info = output["file_info"]
@@ -228,30 +230,7 @@ def initiate_analysis(conn, analysis_id: int, file_path: str):
         server.entity.strings.insert_strings(conn,
                                              analysis_id=analysis_id,
                                              strings=strings)
-        # for string in strings:
-        #     string_id = cur.execute(
-        #         "INSERT INTO strings (analysis_id, score, data) VALUES (%s, %s, %s) RETURNING id",
-        #         [analysis_id, string["score"], string["data"]]
-        #     ).fetchone()[0]
-        #
-        #     string_analysis = string["analysis"]
-        #     string_tags = string_analysis["tags"]
-        #     string_matches = string_analysis["matches"]
-        #
-        #     for tag in string_tags:
-        #         cur.execute("INSERT INTO string_tags (string_id, tag) VALUES (%s, %s)", [
-        #             string_id, tag
-        #         ])
-        #
-        #     for match in string_matches:
-        #         match_start, match_end = match["match"]
-        #         match_definition = match["definition"]
-        #
-        #         cur.execute(
-        #             "INSERT INTO string_matches (string_id, start, \"end\", definition) VALUES (%s, %s, %s, %s)", [
-        #                 string_id, match_start, match_end, match_definition
-        #             ])
-
+        server.entity.capa_entries.insert_capa_entries(conn, analysis_id=analysis_id, capa_entries=capa_output)
         complete_analysis(conn, analysis_id)
 
 
@@ -261,3 +240,12 @@ def complete_analysis(conn, analysis_id: int):
             analysis_id
         ])
         conn.commit()
+
+
+def get_analysis(conn, analysis_id: int):
+    with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+        analysis = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
+        if analysis is None:
+            raise errors.NotFoundError
+
+    return analysis

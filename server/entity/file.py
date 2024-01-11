@@ -4,7 +4,7 @@ import os
 import psycopg.rows
 
 from server import s3
-from pefile_processor import get_hashes
+from application.pefile_processor import get_hashes
 
 
 def get_asset_key_from_hash(sha256: str):
@@ -57,3 +57,12 @@ def create_file(conn, path: str):
         conn.commit()
 
     return file_id
+
+
+def get_download_url(conn, file_id: int):
+    with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+        result = cur.execute("SELECT (value) FROM file_hashes WHERE file_id = %s AND algorithm = 'sha256'",
+                             [file_id]).fetchone()
+        if result is None:
+            raise Exception("File is corrupt or not found, SHA256 hash not available")
+        return asyncio.run(s3.get_download_url(get_asset_key_from_hash(result["value"])))
