@@ -11,8 +11,8 @@ def insert_strings(conn: psycopg.Connection, analysis_id, strings):
                 "COPY strings (analysis_id, _insert_operation_id, _insert_operation_order, score, data) FROM stdin") as copy_strings:
             for local_order, string in enumerate(strings):
                 copy_strings.write_row([analysis_id, insert_operation_id, local_order, string["score"], string["data"]])
-        id_bindings = cur.execute("SELECT id, _insert_operation_order FROM strings WHERE analysis_id = %s",
-                                  [analysis_id]).fetchall()
+        id_bindings = cur.execute("SELECT id, _insert_operation_order FROM strings WHERE _insert_operation_id = %s",
+                                  [insert_operation_id]).fetchall()
 
         with cur.copy("COPY string_tags (string_id, tag) FROM STDIN") as copy_tags:
             for binding in id_bindings:
