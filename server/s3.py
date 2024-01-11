@@ -167,6 +167,13 @@ async def download_many(asset_keys, location):
     await asyncio.gather(*requests)
 
 
+async def get_download_url(asset_key):
+    async with _get_s3_client_context() as client:
+        result = await client.generate_presigned_url('get_object', Params={'Bucket': PRIMARY_BUCKET, 'Key': asset_key}, ExpiresIn=3600)
+
+    return result
+
+
 if __name__ == '__main__':
     async def test():
         async with aiofiles.open("../test_upload.m4v", "br") as file:

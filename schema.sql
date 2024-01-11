@@ -307,7 +307,7 @@ CREATE TABLE "capa_entries"
             ON DELETE CASCADE
 );
 
-CREATE TYPE LOCATION_TYPE AS ENUM ('absolute');
+CREATE TYPE LOCATION_TYPE AS ENUM ('absolute', 'no address', 'file');
 
 CREATE TABLE "capa_matches"
 (
@@ -316,7 +316,7 @@ CREATE TABLE "capa_matches"
     "_insert_operation_order" BIGINT        NOT NULL,
     "capa_entry_id"           BIGINT        NOT NULL,
     "location_type"           LOCATION_TYPE NOT NULL,
-    "location_value"          BIGINT        NOT NULL,
+    "location_value"          BIGINT,
     CONSTRAINT "capa_entry_id"
         FOREIGN KEY ("capa_entry_id") REFERENCES "capa_entries" ("id")
             ON DELETE CASCADE
@@ -350,7 +350,7 @@ CREATE TABLE "capa_node_locations"
     "id"           SERIAL8 PRIMARY KEY,
     "capa_node_id" BIGINT        NOT NULL,
     "type"         LOCATION_TYPE NOT NULL,
-    "value"        BIGINT        NOT NULL,
+    "value"        BIGINT,
     CONSTRAINT "capa_node_id"
         FOREIGN KEY ("capa_node_id") REFERENCES "capa_nodes" ("id")
             ON DELETE CASCADE

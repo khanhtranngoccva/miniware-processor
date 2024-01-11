@@ -8,7 +8,10 @@ from helpers import generate_ids
 def analyze_match_object(match_object):
     def analyze_match(match):
         return {
-            "location": match[0],
+            "location": {
+                "type": match[0]["type"],
+                "value": match[0].get("value"),
+            },
             "nodes": process_tree(match[1])
         }
 
@@ -68,9 +71,10 @@ def process_tree(root):
 
         locations = []
         for location in copy.deepcopy(node["locations"]):
-            if location["type"] == "no address":
-                continue
-            locations.append(location)
+            locations.append({
+                "type": location["type"],
+                "value": location.get("value", None),
+            })
 
         flattened_nodes.append({
             "success": node["success"],
@@ -93,7 +97,7 @@ def insert_capa_entries(conn, analysis_id, capa_entries):
     insert_operation_id_2 = generate_ids.generate_insert_operation_id()
     insert_operation_id_3 = generate_ids.generate_insert_operation_id()
 
-    with conn.cursor() as cursor:
+    with (conn.cursor() as cursor):
         # Layer 1
         with cursor.copy(
                 "COPY capa_entries "
@@ -127,6 +131,7 @@ def insert_capa_entries(conn, analysis_id, capa_entries):
                 [insert_operation_id_2]):
             match_object = layer_2[order]
             for capa_node in match_object["nodes"]:
+                capa_node: dict
                 capa_node["match_id"] = match_id
                 layer_3.append(capa_node)
         # Layer 3

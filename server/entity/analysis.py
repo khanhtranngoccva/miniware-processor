@@ -240,3 +240,12 @@ def complete_analysis(conn, analysis_id: int):
             analysis_id
         ])
         conn.commit()
+
+
+def get_analysis(conn, analysis_id: int):
+    with conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
+        analysis = cur.execute("SELECT * FROM analyses WHERE id = %s", [analysis_id]).fetchone()
+        if analysis is None:
+            raise errors.NotFoundError
+
+    return analysis

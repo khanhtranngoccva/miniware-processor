@@ -133,4 +133,6 @@ FROM analyses
          INNER JOIN aggregated_capa_entries ace on analyses.id = ace.analysis_id
 WHERE state = 'complete';
 
-SELECT * FROM full_analyses WHERE id = 1;
+SELECT *
+FROM full_analyses
+WHERE id = 1;
