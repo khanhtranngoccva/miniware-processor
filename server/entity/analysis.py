@@ -159,6 +159,11 @@ def initiate_analysis(conn, analysis_id: int, file_path: str):
                 analysis_id, export_obj["name"], export_obj["address"], export_obj["ordinal"]
             ])
 
+        packers = output["packers"]
+        with cur.copy("COPY packers (analysis_id, signature) FROM STDIN") as copy:
+            for sig in packers:
+                copy.write_row([analysis_id, sig])
+
         resources = output["resources"]
         for resource in resources:
             resource_id = cur.execute(

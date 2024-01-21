@@ -1,6 +1,6 @@
-from application import pefile_processor
-import pprint
+from server import env
+from server.database import db_connect
 
-results = pefile_processor.analyze_file("./test_coccoc.exe")
 
-pprint.pp(results["strings"])
+with db_connect() as conn:
+    pass

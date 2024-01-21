@@ -1,1 +1,0 @@
-SELECT * FROM capa_nodes ORDER BY capa_match_id, path asc;

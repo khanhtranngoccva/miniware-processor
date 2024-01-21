@@ -4,7 +4,7 @@ from constants import ROOT_DIRECTORY
 
 
 def get_temp_path(path: str):
-    temp_directory = os.path.join(ROOT_DIRECTORY, "temp")
+    temp_directory = "/tmp/miniware"
     output = Path(temp_directory).joinpath(path.lstrip("/\\")).resolve()
     output.relative_to(Path(temp_directory).resolve())
     return output

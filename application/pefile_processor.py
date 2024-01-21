@@ -2,12 +2,18 @@ import math
 import re
 import subprocess
 import typing
+import peutils
+from helpers.directory import get_application_path
 from application import string_analyzer
 import pefile
 import datetime
 import hashlib
 import os
 
+with open(get_application_path("/peid_signatures/userdb.txt"), encoding="windows-1252") as file:
+    peid_signatures = file.read()
+
+signature_database = peutils.SignatureDatabase(data=peid_signatures)
 
 def analyze_file(path: str):
     pe = pefile.PE(path)
@@ -31,6 +37,7 @@ def analyze_file(path: str):
         "resources": get_resources(pe),
         "sections": get_sections(pe),
         "strings": analyze_strings(path),
+        "packers": get_packer_result(pe),
         # Missing: CAPA, Graph
     }
 
@@ -85,8 +92,22 @@ def analyze_strings(path):
     return line_data
 
 
+def get_packer_result(pe: pefile.PE):
+    arr = []
+
+    matches = signature_database.match_all(pe, ep_only=True)
+    if matches:
+        for result in matches:
+            for item in result:
+                arr.append(item)
+
+    return arr
+
+
 def get_resources(pe: pefile.PE):
     results = []
+    if not hasattr(pe, "DIRECTORY_ENTRY_RESOURCE"):
+        return results
     resource_data: pefile.ResourceDirData = pe.DIRECTORY_ENTRY_RESOURCE
 
     for res0 in resource_data.entries:
@@ -116,7 +137,6 @@ def get_resources(pe: pefile.PE):
                 })
     return results
 
-
 def get_sections(pe: pefile.PE):
     res = []
     for section in pe.sections:
@@ -138,7 +158,6 @@ def get_section(section):
     }
     return out
 
-
 def get_size(path: str):
     return os.stat(path).st_size
 
@@ -147,10 +166,8 @@ def get_dos_header(pe: pefile.PE):
     # print(pe.DOS_HEADER)
     pass
 
-
 def get_file_header(pe: pefile.PE):
     file_header_dict = pe.FILE_HEADER.dump_dict()
-    print(file_header_dict)
     raw_timestamp = file_header_dict["TimeDateStamp"]["Value"]
     timestamp_hex = re.search(r"^0x[0-9a-f]+", raw_timestamp, flags=re.IGNORECASE)
     timestamp = datetime.datetime.fromtimestamp(int(timestamp_hex.group(), 16))
