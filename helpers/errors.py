@@ -1,7 +1,7 @@
 class HTTPError(Exception):
     def __init__(self, code=500, message="Unspecified server error."):
-        self.code = code,
-        self.message = message,
+        self.code = code
+        self.message = message
 
 
 class FileInputError(HTTPError):
